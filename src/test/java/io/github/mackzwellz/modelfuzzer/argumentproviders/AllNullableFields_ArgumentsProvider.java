@@ -15,7 +15,7 @@ public class AllNullableFields_ArgumentsProvider implements ArgumentsProvider {
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
         List<Field> modelFields = List.of(Model1.class.getDeclaredFields());
         return modelFields.stream()
-                .map(f -> !f.getType().isPrimitive())
+                .filter(f -> !f.getType().isPrimitive())
                 .map(Arguments::of);
     }
 

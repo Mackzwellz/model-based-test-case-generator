@@ -2,12 +2,10 @@ package io.github.mackzwellz.modelfuzzer.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.mackzwellz.modelfuzzer.argumentproviders.SimpleArgumentsProvider;
-import io.github.mackzwellz.modelfuzzer.argumentproviders.SingleNullField_AllFields_ArgumentsProvider;
-import io.github.mackzwellz.modelfuzzer.argumentproviders.SingleNullField_AllNullableFields_ArgumentsProvider;
+import io.github.mackzwellz.modelfuzzer.argumentproviders.*;
+import io.github.mackzwellz.modelfuzzer.base.utils.ObjectMapperProvider;
+import io.github.mackzwellz.modelfuzzer.base.utils.ReflectionUtil;
 import io.github.mackzwellz.modelfuzzer.sampledata.models.Model1;
-import io.github.mackzwellz.modelfuzzer.testutils.ObjectMapperProvider;
-import io.github.mackzwellz.modelfuzzer.testutils.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,6 +49,23 @@ class BaseTest {
     @ParameterizedTest
     @ArgumentsSource(SingleNullField_AllNullableFields_ArgumentsProvider.class)
     void setNullToEachNullableFieldTest(Pair<Field, Model1> fieldModel1Pair) throws JsonProcessingException {
+        String jsonResult = objectMapper.writeValueAsString(fieldModel1Pair.getValue());
+        System.out.println(jsonResult);
+        Field fieldToCheck = fieldModel1Pair.getKey();
+        Object valueToCheck = ReflectionUtil.getValue(fieldToCheck, fieldModel1Pair.getValue());
+        if (!fieldToCheck.getType().isPrimitive()) {
+            Assertions.assertNull(valueToCheck, String.format("Field %s is not null", fieldToCheck));
+        }
+        Assertions.assertFalse(jsonResult.isEmpty());
+    }
+
+    @ParameterizedTest
+    @ClassesAndArguments(modelClasses = Model1.class,
+            providers = SingleNullField_AllNullableFields_DynamicArgumentsProvider.class
+    )
+    //void customSetNullToEachNullableFieldTest(Class<?> fieldModel1Pair) throws JsonProcessingException {
+//        fieldModel1Pair.getDeclaredFields();
+    void customSetNullToEachNullableFieldTest(Pair<Field, Object> fieldModel1Pair) throws JsonProcessingException {
         String jsonResult = objectMapper.writeValueAsString(fieldModel1Pair.getValue());
         System.out.println(jsonResult);
         Field fieldToCheck = fieldModel1Pair.getKey();
